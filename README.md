@@ -5,11 +5,9 @@ Toppbok til Vealøs
 2. Åpne mappe
 3. Start CMD
 4. Lag enviroment (python -m venv env)
-5. Velg python versjon
-6. Test cmd
+6. Test cmd - se at det står (env)
 7. Installere requirements (pip install -r requirements.txt)
-8. Åpne kommandolinjen og lag databasen 8Sjekk at det står env)
+8. Lag test database
 9. flask init-db
 10. flask populate-db
-11. Velg debug profile
 12. Run
