@@ -45,6 +45,14 @@ def get_user(user_id):
     db = get_db()
     return db.execute(q, (user_id,)).fetchone()
 
+#        user_id = db.execute("SELECT id FROM users WHERE email = ?", (user_email,)).fetchone()['id']
+
+def get_user_by_email(email):
+    q = "select * from users where email = ?"
+    db = get_db()
+    return db.execute(q, (email,)).fetchone()
+
+
 def get_top_users(date_from, date_to):
     q = """
     select t.user_id, u.username, count(*) count_tours

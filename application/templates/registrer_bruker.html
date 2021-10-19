@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block header %}
+<h1>{% block title %} Registrer ny bruker {% endblock %}</h1>
+{% if g.user %}
+{% endif %} 
+{% endblock %} 
+{% block content %}
+
+<form method = "POST">
+    <label>Skriv inn brukernavn</label> <br>
+    <input type="text", name="user_name"> <br>
+    <label>Skriv inn emailen din</label> <br>
+    <input type="email", name="user_mail"> <br>
+    <label>Skriv inn passordet du ønsker</label> <br>
+    <input type="password", name="user_pass"> <br>
+    <label>Ønsker du å ha anonym bruker</label> 
+    <input type="checkbox" value="yes" name="user_type"> <br>
+    <input type="submit">
+    <a href="">Har allerede en bruker</a>
+</form>
+
+{% endblock %}
