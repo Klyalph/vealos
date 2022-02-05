@@ -14,6 +14,7 @@ from application.db import get_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from .db import close_db, get_user, get_user_by_email
 from application import login_manager
+import sqlite3
 
 class User(UserMixin):
     @staticmethod
@@ -31,7 +32,6 @@ bp = Blueprint("auth", __name__)
 
 @bp.route("/register", methods =["GET", "POST"])
 def register():
-    # Se litt på denne om du har tid 
     if request.method == 'POST':
         user_name = request.form.get("user_name")
         user_email = request.form.get("user_mail")
@@ -53,8 +53,13 @@ def register():
             user_visible = 1
 
         if ready:
-            db.execute("INSERT INTO users(username, email, password, visible) VALUES(?, ?, ?, ?)", 
-                       (user_name, user_email, generate_password_hash(user_password), user_visible))
+            try:
+                db.execute("INSERT INTO users(username, email, password, visible) VALUES(?, ?, ?, ?)", 
+                          (user_name, user_email, generate_password_hash(user_password), user_visible))
+            except sqlite3.IntegrityError:
+                flash("Noen andre har allered samme brukernavn")
+                return render_template("registrer_bruker.html") 
+            
             db.commit()
             flash("Du har registrert en bruker")
             return redirect(url_for('index.index'))
@@ -64,7 +69,6 @@ def register():
 @bp.route("/auth/", methods =["GET", "POST"])
 def login():
 
-    # Check if this code is actually working as intended. 
     if current_user.is_authenticated:
         return redirect(url_for('index.index'))
 
@@ -73,11 +77,11 @@ def login():
         user_email = request.form.get("email")
         user_password = request.form.get("password_l")
         user_row = get_user_by_email(user_email)
-        user = User.get(user_row['id'])
 
-        if user is not None:
+        if user_row is not None:
             if check_password_hash(user_row['password'], user_password) \
                and user_email == user_row['email']:
+                user = User.get(user_row['id'])
                 flash('Du er logget inn')
                 login_user(user, remember=True)
                 return redirect(url_for('index.index'))

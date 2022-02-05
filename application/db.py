@@ -1,6 +1,5 @@
 import sqlite3
 
-from typing import List
 import click
 from flask import current_app
 from flask import g
@@ -46,7 +45,6 @@ def get_user(user_id):
     db = get_db()
     return db.execute(q, (user_id,)).fetchone()
 
-    # user_id = db.execute("SELECT id FROM users WHERE email = ?", (user_email,)).fetchone()['id']
 
 def get_user_by_email(email):
     q = "select * from users where email = ?"
@@ -55,7 +53,7 @@ def get_user_by_email(email):
 
 def get_top_users(date_from, date_to):
     q = """
-    select t.user_id, u.username, count(*) count_tours
+    select t.user_id, u.username, count(*) count_tours, visible, initial_tours
     from tours t
     join users u on u.id = t.user_id
     WHERE
@@ -64,8 +62,6 @@ def get_top_users(date_from, date_to):
     order by count(*) DESC
     limit 50
     """
-    if whole_year(date_from, date_to):
-        pass
     # TODO: Må legge til initial tours om det er hele året
     db = get_db()
     results = db.execute(q, (date_from, date_to,)).fetchall()
@@ -103,7 +99,6 @@ def populate_db():
         user_id = choice(userlist)
         td = timedelta(days=randint(0, 60))
         tour_date = date.today() - td
-        # Se video om SQL injection
         db.execute("INSERT INTO tours (user_id, tour_date) VALUES (?, ?)", (user_id, tour_date,))
 
     db.commit()
@@ -119,7 +114,7 @@ def populate_db_command():
 
 @click.command("init")
 @with_appcontext
-def init_and_populate_db_command():
+def init_command():
     init_db()
     populate_db()
     click.echo("initialization and population complete.")

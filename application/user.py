@@ -11,9 +11,11 @@ from flask_login import login_manager, login_user, logout_user, login_required, 
 from werkzeug.exceptions import abort
 from flask import current_app
 from application.db import get_db
-from auth import User
+from .auth import User
 
 bp = Blueprint("user", __name__)
+
+login_manager = LoginManager()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -25,7 +27,7 @@ def index(userId=None):
     db = get_db()
 
     if userId is None:
-        return redirect(url_for('index'))
+        return redirect(url_for('index.index'))
 
     user = db.execute('SELECT * FROM users WHERE id = ?', (str(userId))).fetchone()
     tours = db.execute('SELECT * FROM tours WHERE user_id = ?', (str(userId))).fetchall()

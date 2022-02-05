@@ -5,6 +5,15 @@
 {% endif %} 
 {% endblock %} 
 {% block content %}
+
+{% with messages = get_flashed_messages() %}  
+{% if messages %}  
+      {% for message in messages %}  
+           <p>{{ message }}</p>  
+      {% endfor %}  
+{% endif %}  
+{% endwith %}  
+
 <form method="POST">
 <label>Skriv inn mailen din</label> <br>
 <input type="email", name="email_f">
