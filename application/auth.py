@@ -22,8 +22,7 @@ class User(UserMixin):
         user_row = get_user(user_id)
         user.id = user_row['id']
         return user
-
-
+   
 @login_manager.user_loader
 def load_user(user_id):
     return User.get(user_id)
@@ -32,7 +31,7 @@ bp = Blueprint("auth", __name__)
 
 @bp.route("/register", methods =["GET", "POST"])
 def register():
-    ready = False
+    # Se litt på denne om du har tid 
     if request.method == 'POST':
         user_name = request.form.get("user_name")
         user_email = request.form.get("user_mail")
@@ -40,7 +39,9 @@ def register():
         user_type = request.form.get("user_type")
         db = get_db()
 
-        if user_name == None or user_email == None or user_password == None:
+        if user_name == None \
+        or user_email == None \
+        or user_password == None:
             ready = False
             flash("Du må fylle inn alle rutene")
         else:
@@ -51,8 +52,9 @@ def register():
         else:
             user_visible = 1
 
-        if ready == True:
-            db.execute("INSERT INTO users(username, email, password, visible) VALUES(?, ?, ?, ?)", (user_name, user_email, generate_password_hash(user_password), user_visible))
+        if ready:
+            db.execute("INSERT INTO users(username, email, password, visible) VALUES(?, ?, ?, ?)", 
+                       (user_name, user_email, generate_password_hash(user_password), user_visible))
             db.commit()
             flash("Du har registrert en bruker")
             return redirect(url_for('index.index'))
@@ -61,37 +63,29 @@ def register():
 
 @bp.route("/auth/", methods =["GET", "POST"])
 def login():
+
+    # Check if this code is actually working as intended. 
     if current_user.is_authenticated:
         return redirect(url_for('index.index'))
+
     if request.method == 'POST':
+
         user_email = request.form.get("email")
         user_password = request.form.get("password_l")
-        correct_email = 0
-        correct_password = 0
-        db = get_db()
         user_row = get_user_by_email(user_email)
-        #user_id = db.execute("SELECT id FROM users WHERE email = ?", (user_email,)).fetchone()['id']
-        #user_info = db.execute("SELECT * FROM users WHERE email = ?", (user_email,)).fetchone()
         user = User.get(user_row['id'])
-        if not user:
-            correct_email = 0
-            correct_password = 0
-        else:
-            correct_email = 1
-        if not user:
-            correct_password = 0
-        elif check_password_hash(user_row['password'], user_password):
-            correct_password = 1
 
-        if (correct_email == 1) and (correct_password == 1):
-            flash('Du er logget inn')
-            login_user(user, remember=True)
-            return redirect(url_for('index.index'))
-        else:
-            flash('Du skrevet feil passord eller email')
+        if user is not None:
+            if check_password_hash(user_row['password'], user_password) \
+               and user_email == user_row['email']:
+                flash('Du er logget inn')
+                login_user(user, remember=True)
+                return redirect(url_for('index.index'))
+                 
+        flash('Du skrev feil passord eller email')
+        return render_template('auth.html') 
 
     return render_template("auth.html")
-
 
 @bp.route("/forgot_password", methods =["GET", "POST"])
 def forgot_password():
@@ -110,6 +104,3 @@ def forgot_password():
 def logout():
     logout_user()
     return redirect(url_for("index.index"))
-
-
-

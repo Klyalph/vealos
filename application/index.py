@@ -14,4 +14,3 @@ bp = Blueprint("index", __name__)
 def index():
     today = date.today()
     return render_template("index.html", **locals())
-

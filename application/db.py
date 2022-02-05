@@ -1,5 +1,6 @@
 import sqlite3
 
+from typing import List
 import click
 from flask import current_app
 from flask import g
@@ -45,13 +46,12 @@ def get_user(user_id):
     db = get_db()
     return db.execute(q, (user_id,)).fetchone()
 
-#        user_id = db.execute("SELECT id FROM users WHERE email = ?", (user_email,)).fetchone()['id']
+    # user_id = db.execute("SELECT id FROM users WHERE email = ?", (user_email,)).fetchone()['id']
 
 def get_user_by_email(email):
     q = "select * from users where email = ?"
     db = get_db()
     return db.execute(q, (email,)).fetchone()
-
 
 def get_top_users(date_from, date_to):
     q = """
@@ -64,12 +64,12 @@ def get_top_users(date_from, date_to):
     order by count(*) DESC
     limit 50
     """
-    # TODO: Filtrer ut bare de som har gitt tillatelse til å vises i listen
+    if whole_year(date_from, date_to):
+        pass
     # TODO: Må legge til initial tours om det er hele året
     db = get_db()
-    return db.execute(q, (date_from, date_to,)).fetchall()
-
-
+    results = db.execute(q, (date_from, date_to,)).fetchall()
+    return [user for user in results if user['visible']]
 
 @click.command("init-db")
 @with_appcontext
@@ -93,13 +93,13 @@ def populate_db():
     """
     print(insert_users)
     db.executescript(insert_users)
-    users = db.execute('SELECT id FROM users').fetchall()
-    userlist = []
-    for user in users:
-        userlist.append(user['id'])
-    
+    userlist = [user['id'] 
+                for user in 
+                db.execute('SELECT id FROM users').fetchall()]
+   
     db.execute('DELETE FROM tours')
-    for i in range(100):
+    
+    for _ in range(100):
         user_id = choice(userlist)
         td = timedelta(days=randint(0, 60))
         tour_date = date.today() - td
@@ -117,7 +117,13 @@ def populate_db_command():
     populate_db()
     click.echo("Created dummy data.")
 
-
+@click.command("init")
+@with_appcontext
+def init_and_populate_db_command():
+    init_db()
+    populate_db()
+    click.echo("initialization and population complete.")
+    
 def init_app(app):
     """Register database functions with the Flask app. This is called by
     the application factory.
